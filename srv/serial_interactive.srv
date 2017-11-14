@@ -1,0 +1,4 @@
+string get_msg
+---
+string echo_msg
+int32 echo_val
