@@ -7,6 +7,8 @@
 
 int serial_data_index = 0;
 ROBOT_PARA robot_odom = {" ", 0, (struct ODOM*)malloc(sizeof(ODOM))};
+RobotState_Info WaterSeat = {" ", 0x00};
+RobotState_Info DoorState = {" ", 0x00};
 
 SerialControl::SerialControl()
 {
@@ -150,6 +152,36 @@ int SerialControl::serial_data_calssify()
         {
             right_odom_plus = ((((right_odom_plus_arry[3]&0x1c)>>2)<<8)|right_odom_plus_arry[5]);
             printf("right_odom_puls%d\n",right_odom_plus);
+        }
+    }
+
+    if(6 == s_length)
+    {
+        if ( 0xfc == serial_data[0])
+        {
+//            switch (serial_data[2])
+//            {
+//                case 0x01:
+//                    WaterSeat.device_name = "water_seat";
+//                    break;
+//                case 0x03:
+//                    DoorState.device_name = "door_state";
+//                    break;
+//                default:
+//                    WaterSeat.device_name = "errorinfo";
+//                    DoorState.device_name = "errorinfo";
+//                    break;
+//            }
+            if (0x01 == serial_data[2])
+            {
+                WaterSeat.device_name = "water_seat";
+                WaterSeat.info_byte = serial_data[3];
+            }
+            if (0x03 == serial_data[2])
+            {
+                DoorState.device_name = "door_state";
+                DoorState.info_byte = serial_data[3];
+            }
         }
     }
 

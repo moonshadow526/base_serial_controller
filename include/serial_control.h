@@ -37,7 +37,11 @@ typedef struct ODOM
    int right_odom;
 }Odom;
 
-//Odom odom_t = {0,0};
+typedef struct ROBOTSTATE_INFO
+{
+    std::string device_name;
+    unsigned char info_byte;
+}RobotState_Info;
 
 typedef struct Robot_Para
 {
@@ -47,7 +51,7 @@ typedef struct Robot_Para
 }ROBOT_PARA;
 
 
-
-
+extern RobotState_Info WaterSeat;
+extern RobotState_Info DoorState;
 
 #endif //PROJECT_READ_ENCODER_H

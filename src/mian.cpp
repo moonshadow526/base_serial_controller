@@ -87,6 +87,7 @@ int main(int argc, char ** argv)
 
     ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 10);
     ros::Publisher joint_state_pub = n.advertise<sensor_msgs::JointState>("/joint_states", 10);
+    //ros::Publisher robot_state_pub = n.advertise<std_msgs>
     ros::Subscriber cmd_sub = n.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, cmd_vel_set);
 
     ros::ServiceServer service = n.advertiseService("serial_data_server",serial_data_server);
