@@ -40,7 +40,8 @@ typedef struct ODOM
 typedef struct ROBOTSTATE_INFO
 {
     std::string device_name;
-    unsigned char info_byte;
+    unsigned char info_byte[2];
+    bool pub_flag;
 }RobotState_Info;
 
 typedef struct Robot_Para
@@ -51,7 +52,29 @@ typedef struct Robot_Para
 }ROBOT_PARA;
 
 
+typedef struct WR_SPEEDPARA
+{
+    unsigned char  head;
+    unsigned char length;
+    unsigned char ctl_flag1;
+    unsigned char ctl_flag2;
+    unsigned char ctl_flag3;
+    unsigned char chk_sum;
+    unsigned char tail;
+}WR_SpeedPara;
+
+typedef struct WR_ROBOTSTATE
+{
+    unsigned char  head;
+    unsigned char length;
+    unsigned char ctl_flag1;
+    unsigned char ctl_flag2;
+    unsigned char chk_sum;
+    unsigned char tail;
+}WR_RobotState;
+
 extern RobotState_Info WaterSeat;
 extern RobotState_Info DoorState;
+extern unsigned char wr_flag;
 
 #endif //PROJECT_READ_ENCODER_H

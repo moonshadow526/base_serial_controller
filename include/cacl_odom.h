@@ -19,15 +19,7 @@
 void calc_odom(void);
 void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel);
 
-typedef struct WR_ROBOTPARA
-{
-    unsigned char  head;
-    unsigned char length;
-    unsigned char ctl_flag1;
-    unsigned char ctl_flag2;
-    unsigned char ctl_flag3;
-    unsigned char chk_sum;
-    unsigned char tail;
-}WR_RobotPara;
+extern pthread_rwlock_t rwlock;
+
 
 #endif //PROJECT_CACL_ODOM_H
