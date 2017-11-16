@@ -9,6 +9,6 @@ extern pthread_rwlock_t rwlock;
 extern struct ROBOTSTATE_INFO WaterSeat;
 extern struct ROBOTSTATE_INFO DoorState;
 
-bool serial_server_process(serila_controller::serial_interactive::Request &req, serila_controller::serial_interactive::Response &res);
+bool serial_server_process(serila_controller::serial_data_interactive::Request &req, serila_controller::serial_data_interactive::Response &res);
 
 #endif //PROJECT_SERIAL_SERVER_PROCESS_H

@@ -49,7 +49,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   robot_state.msg
+   robot_fun_state.msg
 #   Message1.msg
 #   Message2.msg
  )
@@ -59,7 +59,7 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
 #   Service1.srv
 #   Service2.srv
-    serial_interactive.srv
+    serial_data_interactive.srv
  )
 
 ## Generate actions in the 'action' folder
