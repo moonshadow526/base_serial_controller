@@ -59,7 +59,7 @@ void calc_odom(void)
 
 void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
 {
-    WR_RobotPara wrRobotPara = {0xfe,0x07,0x04,0x00,0x00,0x00,0xff};
+    WR_SpeedPara wrSpeedPara = {0xfe,0x07,0x04,0x00,0x00,0x00,0xff};
 
     unsigned char left_speed_set = 0;
     unsigned char right_speed_set = 0;
@@ -171,11 +171,12 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
     printf("--------------------speed left is%x ------------------\n", left_speed_set);
     printf("speed right is%x\n", right_speed_set);
 
-    wrRobotPara.ctl_flag2 = left_speed_set;
-    wrRobotPara.ctl_flag3 = right_speed_set;
+    wrSpeedPara.ctl_flag2 = left_speed_set;
+    wrSpeedPara.ctl_flag3 = right_speed_set;
 
 //    printf("serial speed set is%x", wrRobotPara);
-
-    serialControl_speed.write_port(serialControl_speed.serial_fd,(const char *)&wrRobotPara,7);
+    pthread_rwlock_wrlock(&rwlock);
+    serialControl_speed.write_port(serialControl_speed.serial_fd,(const char *)&wrSpeedPara,7);
+    pthread_rwlock_unlock(&rwlock);
 
 }

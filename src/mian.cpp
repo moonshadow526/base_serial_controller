@@ -8,8 +8,8 @@
 #include <sensor_msgs/JointState.h>
 #include <boost/assign.hpp>
 
-
-#include "serila_controller/serial_interactive.h"
+#include "serila_controller/serial_data_interactive.h"
+#include "serila_controller/robot_fun_state.h"
 
 #include "../include/serial.h"
 #include "../include/serial_control.h"
@@ -18,14 +18,14 @@
 
 extern  ROBOT_PARA robot_odom;
 
-static long int left_encoder_count = 0;
-static long int right_encoder_count = 0;
-static long int lspeed_encoder_count = 0;
-static long int rspeed_encoder_count = 0;
-
-int rcallbackcount = 0;
-float left_speed_cmd = 0.0;
-float right_speed_cmd = 0.0;
+//static long int left_encoder_count = 0;
+//static long int right_encoder_count = 0;
+//static long int lspeed_encoder_count = 0;
+//static long int rspeed_encoder_count = 0;
+//
+//int rcallbackcount = 0;
+//float left_speed_cmd = 0.0;
+//float right_speed_cmd = 0.0;
 extern float left_speed;
 extern float right_speed;
 
@@ -39,7 +39,9 @@ extern float theta;
 extern float vx;
 extern float vth;
 
-bool serial_data_server(serila_controller::serial_interactive::Request &req, serila_controller::serial_interactive::Response &res)
+pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
+
+bool serial_data_server(serila_controller::serial_data_interactive::Request &req, serila_controller::serial_data_interactive::Response &res)
 {
     return serial_server_process(req, res);
 }
@@ -68,9 +70,9 @@ int main(int argc, char ** argv)
         serialControl.read_serial_task();
     }
 //    while (1);
-    ros::Time current_time, last_time;
+    ros::Time current_time;
 
-    ros::init(argc, argv, "serial_interactive_node");
+    ros::init(argc, argv, "serial_control_node");
     ros::NodeHandle n;
 
     tf::TransformBroadcaster odom_broadcaster;
@@ -83,11 +85,11 @@ int main(int argc, char ** argv)
     joint_state.position.resize(2);
     joint_state.velocity.resize(2);
     joint_state.name[0] = "left_wheel_joint";
-    joint_state.name[1] = "left_wheel_joint";
+    joint_state.name[1] = "right_wheel_joint";
 
     ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 10);
     ros::Publisher joint_state_pub = n.advertise<sensor_msgs::JointState>("/joint_states", 10);
-    //ros::Publisher robot_state_pub = n.advertise<std_msgs>
+    ros::Publisher robot_fun_state_pub = n.advertise<serila_controller::robot_fun_state>("/robot_fun_state", 10);
     ros::Subscriber cmd_sub = n.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, cmd_vel_set);
 
     ros::ServiceServer service = n.advertiseService("serial_data_server",serial_data_server);
@@ -97,6 +99,7 @@ int main(int argc, char ** argv)
     while (ros::ok())
     {
         geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(theta);
+        current_time = ros::Time::now();
         calc_odom();
 //        left_speed = robot_odom.odom->left_odom/20;
 //        right_speed = robot_odom.odom->right_odom/20;
@@ -148,6 +151,23 @@ int main(int argc, char ** argv)
         joint_state.velocity[1] = right_speed;
         joint_state_pub.publish(joint_state);
 
+        if (WaterSeat.pub_flag)
+        {
+            serila_controller::robot_fun_state waterSeat;
+            waterSeat.device_name = "waret_seat";
+            waterSeat.para = WaterSeat.info_byte[0];
+            robot_fun_state_pub.publish(waterSeat);
+
+        }
+
+        if (DoorState.pub_flag)
+        {
+            serila_controller::robot_fun_state doorState;
+            doorState.device_name = "doorstate";
+            doorState.para = WaterSeat.info_byte[0];
+            robot_fun_state_pub.publish(doorState);
+
+        }
         ros::spinOnce();
         r.sleep();
     }

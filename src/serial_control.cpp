@@ -7,8 +7,9 @@
 
 int serial_data_index = 0;
 ROBOT_PARA robot_odom = {" ", 0, (struct ODOM*)malloc(sizeof(ODOM))};
-RobotState_Info WaterSeat = {" ", 0x00};
-RobotState_Info DoorState = {" ", 0x00};
+RobotState_Info WaterSeat = {" ", {0x00,0x00}, false};
+RobotState_Info DoorState = {" ", {0x00,0x00}, false};
+unsigned char last_wr_flag = 0x01;
 
 SerialControl::SerialControl()
 {
@@ -145,7 +146,7 @@ int SerialControl::serial_data_calssify()
             //right moto
        if(0 == (right_odom_plus_arry[3] & 0x02))            //positive
         {
-            right_odom_plus = -(((right_odom_plus_arry[3]&0x1c)>>2)<<8)|right_odom_plus_arry[5];
+            right_odom_plus = -((((right_odom_plus_arry[3]&0x1c)>>2)<<8)|right_odom_plus_arry[5]);
             printf("right_odom_puls%d\n",right_odom_plus);
         }
         else if(2 == (right_odom_plus_arry[3] & 0x02))            //nagetive
@@ -175,12 +176,31 @@ int SerialControl::serial_data_calssify()
             if (0x01 == serial_data[2])
             {
                 WaterSeat.device_name = "water_seat";
-                WaterSeat.info_byte = serial_data[3];
+                if(wr_flag == ~last_wr_flag ){
+                    WaterSeat.info_byte[1] = serial_data[3];
+                    WaterSeat.pub_flag = false;
+                    last_wr_flag = wr_flag;
+                }
+                else
+                {
+                    WaterSeat.info_byte[0] = serial_data[3];
+                    WaterSeat.pub_flag = true;
+                }
+
             }
             if (0x03 == serial_data[2])
             {
                 DoorState.device_name = "door_state";
-                DoorState.info_byte = serial_data[3];
+                if(wr_flag == ~last_wr_flag ){
+                    DoorState.info_byte[1] = serial_data[3];
+                    DoorState.pub_flag = false;
+                    last_wr_flag = wr_flag;
+                }
+                else
+                {
+                    DoorState.info_byte[0] = serial_data[3];
+                    DoorState.pub_flag = true;
+                }
             }
         }
     }
