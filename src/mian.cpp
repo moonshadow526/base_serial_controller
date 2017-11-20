@@ -16,6 +16,8 @@
 #include "../include/serial_server_process.h"
 #include "../include/cacl_odom.h"
 
+#include "../include/debug.h"
+
 extern  ROBOT_PARA robot_odom;
 
 //static long int left_encoder_count = 0;
@@ -98,9 +100,12 @@ int main(int argc, char ** argv)
     ros::Rate r(50);
     while (ros::ok())
     {
+
+
         geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(theta);
         current_time = ros::Time::now();
         calc_odom();
+//        DEBUG("hello debug %d %d\n",112, 111);
 //        left_speed = robot_odom.odom->left_odom/20;
 //        right_speed = robot_odom.odom->right_odom/20;
 

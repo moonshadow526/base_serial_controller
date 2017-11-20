@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "../include/serial_control.h"
+#include "../include/debug.h"
 
 int serial_data_index = 0;
 ROBOT_PARA robot_odom = {" ", 0, (struct ODOM*)malloc(sizeof(ODOM))};
@@ -122,11 +123,11 @@ int SerialControl::serial_data_calssify()
     unsigned char right_odom_plus_arry[10];
 
     for (int i = 0; i < s_length; i++) {
-        printf("read data %d is %x\n", i, serial_data[i]);
+        DEBUG("read data %d is %x\n", i, serial_data[i]);
         left_odom_plus_arry[i] = serial_data[i];
         right_odom_plus_arry[i] = serial_data[i];
     }
-    printf("length %d\n", s_length);
+    DEBUG("length %d\n", s_length);
     if (8 == s_length)
     {
         robot_odom.device_name = "odom";
@@ -135,24 +136,24 @@ int SerialControl::serial_data_calssify()
         if(0 == (left_odom_plus_arry[3]&0x01))            //positive
         {
             left_odom_plus = (((left_odom_plus_arry[3]&0xe0)>>5)<<8)|left_odom_plus_arry[4];
-            printf("left_odom_puls%d\n",left_odom_plus);
+            DEBUG("left_odom_puls%d\n",left_odom_plus);
         }
 
         else if(1 == (left_odom_plus_arry[3]&0x01))            //nagetive
         {
             left_odom_plus = -((((left_odom_plus_arry[3]&0xe0)>>5)<<8)|left_odom_plus_arry[4]);
-            printf("left_odom_puls%d\n",left_odom_plus);
+            DEBUG("left_odom_puls%d\n",left_odom_plus);
         }
             //right moto
        if(0 == (right_odom_plus_arry[3] & 0x02))            //positive
         {
             right_odom_plus = -((((right_odom_plus_arry[3]&0x1c)>>2)<<8)|right_odom_plus_arry[5]);
-            printf("right_odom_puls%d\n",right_odom_plus);
+            DEBUG("right_odom_puls%d\n",right_odom_plus);
         }
         else if(2 == (right_odom_plus_arry[3] & 0x02))            //nagetive
         {
             right_odom_plus = ((((right_odom_plus_arry[3]&0x1c)>>2)<<8)|right_odom_plus_arry[5]);
-            printf("right_odom_puls%d\n",right_odom_plus);
+            DEBUG("right_odom_puls%d\n",right_odom_plus);
         }
     }
 

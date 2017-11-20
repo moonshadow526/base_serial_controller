@@ -16,7 +16,7 @@ Serial::~Serial()
 int Serial::open_port(int index)
 {
     int fd;
-    char *dev[] = {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2"};
+    char *dev[] = {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2"};   //serial_usb
     if (index > 0 && index <=3){
         printf("%s\n",dev[index-1]);
         fd = open(dev[index-1],O_RDWR|O_NOCTTY|O_NDELAY);

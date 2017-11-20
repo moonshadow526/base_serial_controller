@@ -4,7 +4,14 @@
 
 #include "../include/cacl_odom.h"
 #include "../include/serial_control.h"
+#include "../include/debug.h"
 #include <math.h>
+
+#define STARTSPEED_P 6.8
+
+#define MINISPEED_P 2
+#define MAXSPEED_P 16.4
+
 
 long int last_left_encoder_count = 0;
 long int last_right_encoder_count = 0;
@@ -27,16 +34,18 @@ float vth = 0.0;
 void calc_odom(void)
 {
     float  dt = 0.02;
-    printf("right odom %ld\n",robot_odom.odom->right_odom);
-    printf("left odom %ld\n",robot_odom.odom->left_odom);
+
+//    printf("right odom %ld\n",robot_odom.odom->right_odom);
+    DEBUG("right odom %ld\n",robot_odom.odom->right_odom);
+    DEBUG("left odom %ld\n",robot_odom.odom->left_odom);
     float distance_left = (robot_odom.odom->left_odom - last_left_encoder_count)/TICKSPERMETER;
     float distance_right = (robot_odom.odom->right_odom - last_right_encoder_count)/TICKSPERMETER;
 
     left_speed = (robot_odom.odom->left_odom - last_left_encoder_count)/TICKSPERRADIAN/dt;
     right_speed = (robot_odom.odom->right_odom - last_right_encoder_count)/TICKSPERRADIAN/dt;
 
-    printf("\n\nleft speed of rad/s %f\n\n", left_speed);
-    printf("\n\nright speed of rad/s %f\n\n", right_speed);
+    DEBUG("left speed of rad/s %f\n", left_speed);
+    DEBUG("right speed of rad/s %f\n", right_speed);
 
     float dis_xy = (distance_left + distance_right)/2;
     float dth = (distance_right - distance_left)/WHEEL_SEPARATION;
@@ -77,11 +86,11 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
 
     if (left_speed_cmd >0)
     {
-        if (2 <= left_speed_cmd && left_speed_cmd < 6.8)
+        if (MINISPEED_P <= left_speed_cmd && left_speed_cmd < STARTSPEED_P) //2<=  left_speed_cmd <6.8
         {
-            left_speed_cmd = 6.8;
+            left_speed_cmd = STARTSPEED_P;
         }
-        else if (left_speed_cmd < 2)
+        else if (left_speed_cmd < MINISPEED_P)
         {
             left_speed_cmd = 0;
         }
@@ -89,11 +98,11 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
 
     if (left_speed_cmd < 0)
     {
-        if (-2 >= left_speed_cmd && left_speed_cmd > -6.8)
+        if (-MINISPEED_P >= left_speed_cmd && left_speed_cmd > -STARTSPEED_P)
         {
-            left_speed_cmd = -6.8;
+            left_speed_cmd = -STARTSPEED_P;
         }
-        else if (left_speed_cmd > -2)
+        else if (left_speed_cmd > -MINISPEED_P)
         {
             left_speed_cmd = 0;
         }
@@ -101,11 +110,11 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
 
     if (right_speed_cmd > 0)
     {
-        if (2 <= right_speed_cmd && right_speed_cmd < 6.8)
+        if (MINISPEED_P <= right_speed_cmd && right_speed_cmd < STARTSPEED_P)
         {
-            right_speed_cmd = 6.8;
+            right_speed_cmd = STARTSPEED_P;
         }
-        else if(right_speed_cmd < 2)
+        else if(right_speed_cmd < MINISPEED_P)
         {
             right_speed_cmd = 0;
         }
@@ -113,54 +122,54 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
 
     if (right_speed_cmd < 0)
     {
-        if (-2 >= right_speed_cmd && right_speed_cmd > -6.8)
+        if (-MINISPEED_P >= right_speed_cmd && right_speed_cmd > -STARTSPEED_P)
         {
-            right_speed_cmd = -6.8;
+            right_speed_cmd = -STARTSPEED_P;
         }
-        else if(right_speed_cmd > -2)
+        else if(right_speed_cmd > -MINISPEED_P)
         {
             right_speed_cmd = 0;
         }
     }
 
 
-    printf("--------------------speed left is%f ------------------\n", left_speed_cmd);
-    printf("speed right is%f\n", right_speed_cmd);
+    DEBUG("--------------------speed left is%f ------------------\n", left_speed_cmd);
+    DEBUG("speed right is%f\n", right_speed_cmd);
 
-    if (left_speed_cmd >= 6.8)
+    if (left_speed_cmd >= STARTSPEED_P)
     {
-        if (left_speed_cmd > 16.4)
+        if (left_speed_cmd > MAXSPEED_P)
         {
-            left_speed_cmd = 16.4;
+            left_speed_cmd = MAXSPEED_P;
         }
         left_speed_set = 27+(left_speed_cmd - 6.8)/0.1;
     }
 
-    if (right_speed_cmd >= 6.8)
+    if (right_speed_cmd >= STARTSPEED_P)
     {
-        if (right_speed_cmd > 16.4)
+        if (right_speed_cmd > MAXSPEED_P)
         {
-            right_speed_cmd = 16.4;
+            right_speed_cmd = MAXSPEED_P;
         }
         right_speed_set = 27+(right_speed_cmd - 6.8)/0.1;
     }
 
-    if(left_speed_cmd <= -6.8)
+    if(left_speed_cmd <= -STARTSPEED_P)
     {
-        if (left_speed_cmd < -16.4)
+        if (left_speed_cmd < -MAXSPEED_P)
         {
-            left_speed_cmd = -16.4;
+            left_speed_cmd = -MAXSPEED_P;
         }
         left_speed_set = 19+(6.8 -left_speed_cmd)/0.1;
 
         left_speed_set = 0x80|left_speed_set;
     }
 
-    if(right_speed_cmd <= -6.8)
+    if(right_speed_cmd <= -STARTSPEED_P)
     {
-        if (right_speed_cmd < -16.4)
+        if (right_speed_cmd < -MAXSPEED_P)
         {
-            right_speed_cmd = -16.4;
+            right_speed_cmd = -MAXSPEED_P;
         }
 
         right_speed_set = 19+(6.8 - right_speed_cmd)/0.1;
@@ -168,8 +177,8 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
         right_speed_set = 0x80|right_speed_set;
     }
 
-    printf("--------------------speed left is%x ------------------\n", left_speed_set);
-    printf("speed right is%x\n", right_speed_set);
+    DEBUG("--------------------speed left is%x ------------------\n", left_speed_set);
+    DEBUG("speed right is%x\n", right_speed_set);
 
     wrSpeedPara.ctl_flag2 = left_speed_set;
     wrSpeedPara.ctl_flag3 = right_speed_set;
