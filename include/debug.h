@@ -5,7 +5,7 @@
 #ifndef PROJECT_DEBUG_H
 #define PROJECT_DEBUG_H
 
-#define __DEBUG__
+//#define __DEBUG__
 
 #ifdef __DEBUG__
 //#define DEBUG(format,...) printf("file"__FILE__ format,##__VA_ARGS__)

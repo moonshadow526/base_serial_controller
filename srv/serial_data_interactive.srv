@@ -2,4 +2,4 @@ string get_msg
 uint8 get_val
 ---
 string echo_msg
-int32 echo_val
+uint8 echo_val

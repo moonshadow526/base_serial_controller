@@ -3,6 +3,7 @@
 //
 
 #include "../include/serial.h"
+
 Serial::Serial()
 {
 
@@ -13,14 +14,19 @@ Serial::~Serial()
 
 }
 
+//int nFd[3] = {0};
+
+int nfd[5] = {0};
+
 int Serial::open_port(int index)
 {
-    int fd;
-    char *dev[] = {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2"};   //serial_usb
+
+    char *dev[] = {"/dev/serial_usb","/dev/imu_serial","/dev/ttyUSB2"};   ///dev/serial_usb
     if (index > 0 && index <=3){
         printf("%s\n",dev[index-1]);
-        fd = open(dev[index-1],O_RDWR|O_NOCTTY|O_NDELAY);
-        if (-1 == fd){
+       fd_ = open(dev[index-1],O_RDWR|O_NOCTTY|O_NDELAY);
+        nfd[index] = fd_;
+        if (-1 == nfd[index]){
             perror("Can't open serial port");
             return -1;
         }
@@ -28,16 +34,16 @@ int Serial::open_port(int index)
             printf("Open %s ....\n",dev[index -1]);
     }
 
-    if (fcntl(fd, F_SETFL, 0)<0)
+    if (fcntl(nfd[index], F_SETFL, 0)<0)
         printf("Fcntl failed!\n");
     else
-        printf("fcntl=%d\n",fcntl(fd, F_SETFL,0));
+        printf("fcntl=%d\n",fcntl(nfd[index], F_SETFL,0));
     if (isatty(STDIN_FILENO) == 0)
         printf("standard input is not a terminal device\n");
     else
         printf("isatty success!\n");
-    printf("fd-open = %d\n",fd);
-    return fd;
+    printf("fd-open = %d\n",nfd[index]);
+    return fd_;
 }
 
 int Serial::set_port(int fd, int nSpeed, int nBits, char nEvent, int nStop)
@@ -124,12 +130,10 @@ int Serial::set_port(int fd, int nSpeed, int nBits, char nEvent, int nStop)
     return 0;
 }
 
-int Serial::read_port(int fd, unsigned char *data, int datalength)
+int Serial::read_port(int nport, unsigned char *data, int datalength)
 {
-    int nFd;
 
-    if (fd < 0)
-        return -1;
+    int i = 0;
     int len = 0;
     memset(data,0,datalength);
 
@@ -138,19 +142,29 @@ int Serial::read_port(int fd, unsigned char *data, int datalength)
     struct timeval tv = {0};
 
     FD_ZERO(&read_set);
-    FD_SET(fd,&read_set);
-    max_fd = fd+1;
+
+    FD_SET(nfd[encord_serial],&read_set);
+    max_fd = nfd[encord_serial]+1;
     tv.tv_sec = 0;
     tv.tv_usec = 0;
     if (select(max_fd, &read_set, NULL, NULL, NULL) <0)
     {
         printf("Read data select error\n");
     }
-    int nRet = FD_ISSET(fd, &read_set);
-    if (nRet)
+    if (nport == encord_serial)
     {
-        len = read(fd, data, datalength);
+        int nRet = FD_ISSET(nfd[encord_serial], &read_set);
+        if (nRet)
+        {
+
+            len = read(nfd[encord_serial], data, datalength);
+//            printf("encord_serial>>nport=%d\t nfd=%d\t len=%d\n",nport,nfd[encord_serial],len);
+        }
     }
+    else{
+        printf("unknow event\n");
+    }
+
 //    do
 //    {
 //        nFd = select(max_fd, &read_set, NULL, NULL, NULL);

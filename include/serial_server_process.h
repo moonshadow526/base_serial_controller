@@ -11,4 +11,6 @@ extern struct ROBOTSTATE_INFO DoorState;
 
 bool serial_server_process(serila_controller::serial_data_interactive::Request &req, serila_controller::serial_data_interactive::Response &res);
 
+extern int nfd[5];
+
 #endif //PROJECT_SERIAL_SERVER_PROCESS_H

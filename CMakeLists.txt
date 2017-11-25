@@ -192,5 +192,8 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(serila_controller src/serial.cpp src/mian.cpp src/serial_control.cpp src/serial_server_process.cpp src/cacl_odom.cpp )
+add_executable(serila_controller src/serial.cpp src/mian.cpp src/serial_control.cpp src/serial_server_process.cpp src/cacl_odom.cpp)
 target_link_libraries(serila_controller ${catkin_LIBRARIES})
+
+add_executable(test_record_vel src/test_record_vel.cpp)
+target_link_libraries(test_record_vel ${catkin_LIBRARIES} pthread)

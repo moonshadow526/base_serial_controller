@@ -7,9 +7,9 @@
 #include "../include/debug.h"
 #include <math.h>
 
-#define STARTSPEED_P 6.8
+#define STARTSPEED_P 3.0
 
-#define MINISPEED_P 2
+#define MINISPEED_P 0.1
 #define MAXSPEED_P 16.4
 
 
@@ -36,8 +36,8 @@ void calc_odom(void)
     float  dt = 0.02;
 
 //    printf("right odom %ld\n",robot_odom.odom->right_odom);
-    DEBUG("right odom %ld\n",robot_odom.odom->right_odom);
-    DEBUG("left odom %ld\n",robot_odom.odom->left_odom);
+    DEBUG("right odom %d\n",robot_odom.odom->right_odom);
+    DEBUG("left odom %d\n",robot_odom.odom->left_odom);
     float distance_left = (robot_odom.odom->left_odom - last_left_encoder_count)/TICKSPERMETER;
     float distance_right = (robot_odom.odom->right_odom - last_right_encoder_count)/TICKSPERMETER;
 
@@ -83,7 +83,7 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
     right_speed_cmd = (cmd_x + cmd_theta * WHEEL_SEPARATION / 2.0)/WHEEL_RADIUS;
 
     left_speed_cmd = 0.0 - left_speed_cmd;
-
+#ifdef speedlimt
     if (left_speed_cmd >0)
     {
         if (MINISPEED_P <= left_speed_cmd && left_speed_cmd < STARTSPEED_P) //2<=  left_speed_cmd <6.8
@@ -132,9 +132,9 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
         }
     }
 
-
-    DEBUG("--------------------speed left is%f ------------------\n", left_speed_cmd);
-    DEBUG("speed right is%f\n", right_speed_cmd);
+#endif
+    printf("--------------------speed left is %f ------------------\n", left_speed_cmd);
+    printf("--------------------speed right is %f ------------------\n", right_speed_cmd);
 
     if (left_speed_cmd >= STARTSPEED_P)
     {
@@ -142,7 +142,8 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
         {
             left_speed_cmd = MAXSPEED_P;
         }
-        left_speed_set = 27+(left_speed_cmd - 6.8)/0.1;
+//        left_speed_set = 27+(left_speed_cmd - STARTSPEED_P)/0.1;
+        left_speed_set = left_speed_cmd*3.6;                          //left_speed_cmd = 200*5ms*encoder(left_speed_set)/7200  pre second encoder count/7200
     }
 
     if (right_speed_cmd >= STARTSPEED_P)
@@ -151,7 +152,8 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
         {
             right_speed_cmd = MAXSPEED_P;
         }
-        right_speed_set = 27+(right_speed_cmd - 6.8)/0.1;
+//        right_speed_set = 27+(right_speed_cmd - STARTSPEED_P)/0.1;
+        right_speed_set = right_speed_cmd*3.6;
     }
 
     if(left_speed_cmd <= -STARTSPEED_P)
@@ -160,7 +162,8 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
         {
             left_speed_cmd = -MAXSPEED_P;
         }
-        left_speed_set = 19+(6.8 -left_speed_cmd)/0.1;
+//        left_speed_set = 19+(STARTSPEED_P -left_speed_cmd)/0.1;
+        left_speed_set = -left_speed_cmd*3.6;
 
         left_speed_set = 0x80|left_speed_set;
     }
@@ -172,20 +175,30 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
             right_speed_cmd = -MAXSPEED_P;
         }
 
-        right_speed_set = 19+(6.8 - right_speed_cmd)/0.1;
+//        right_speed_set = 19+(STARTSPEED_P - right_speed_cmd)/0.1;
+        right_speed_set= -right_speed_cmd*3.6;
 
         right_speed_set = 0x80|right_speed_set;
     }
 
-    DEBUG("--------------------speed left is%x ------------------\n", left_speed_set);
-    DEBUG("speed right is%x\n", right_speed_set);
+    printf("--------------------speed left is %x ------------------\n", left_speed_set);
+    printf("--------------------speed right is %x ------------------\n", right_speed_set);
 
     wrSpeedPara.ctl_flag2 = left_speed_set;
     wrSpeedPara.ctl_flag3 = right_speed_set;
 
 //    printf("serial speed set is%x", wrRobotPara);
     pthread_rwlock_wrlock(&rwlock);
-    serialControl_speed.write_port(serialControl_speed.serial_fd,(const char *)&wrSpeedPara,7);
+    serialControl_speed.write_port(nfd[encord_serial],(const char *)&wrSpeedPara,7);
     pthread_rwlock_unlock(&rwlock);
+
+    if(wr_zero_speed)
+    {
+        wrSpeedPara.ctl_flag2 = 0x00;
+        wrSpeedPara.ctl_flag3 = 0x00;
+        pthread_rwlock_wrlock(&rwlock);
+        serialControl_speed.write_port(nfd[encord_serial],(const char *)&wrSpeedPara,7);
+        pthread_rwlock_unlock(&rwlock);
+    }
 
 }

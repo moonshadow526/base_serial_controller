@@ -7,6 +7,8 @@
 
 #include <geometry_msgs/Twist.h>
 
+#define speedlimt
+
 //两轮子的间距-米
 #define WHEEL_SEPARATION       0.296
 //轮子半径-米
@@ -20,6 +22,7 @@ void calc_odom(void);
 void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel);
 
 extern pthread_rwlock_t rwlock;
-
+extern bool wr_zero_speed;
+extern int nfd[5];
 
 #endif //PROJECT_CACL_ODOM_H

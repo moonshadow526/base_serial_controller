@@ -19,14 +19,21 @@ public:
     int open_serial_port(int index);
     int close_serial_port();
     int read_serial_data();
+    int read_imu_data();
     int read_serial_task();
     int write_serial_data();
     int serial_data_calssify();
+    float imu_data_calssify();
     int serial_fd;
+    int imu_fd;
 private:
     pthread_t read_serial_threadid;
+    pthread_t read_imu_threadid;
     unsigned char serial_data[10];
     unsigned char serial_data_r[10];
+
+    unsigned char imu_serial_data[10];
+    unsigned char imu_serial_data_r[10];
     int s_length;
 
 };

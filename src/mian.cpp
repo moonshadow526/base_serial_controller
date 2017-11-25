@@ -41,36 +41,44 @@ extern float theta;
 extern float vx;
 extern float vth;
 
+bool wr_zero_speed = false;
+extern bool pub_status;
+
+extern double imu_yaw;
+
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
 
 bool serial_data_server(serila_controller::serial_data_interactive::Request &req, serila_controller::serial_data_interactive::Response &res)
 {
+//    printf("exec server\n");
     return serial_server_process(req, res);
 }
 
 int main(int argc, char ** argv)
 {
 
-    int fd = 0;
+    int odom_fd = 0;
+    int imu_fd = 0;
     robot_odom.odom->right_odom = 0;
     robot_odom.odom->left_odom = 0;
 
     SerialControl serialControl;
 
-    fd = serialControl.open_serial_port(1);
-    if (0 == fd){
+
+    odom_fd = serialControl.open_serial_port(encord_serial);
+    if (0 == odom_fd){
         serialControl.read_serial_task();
     }
-
 //    Control.close_encoder_port();
     else{
-        while (-1 == fd)
+        while (-1 == odom_fd)
         {
-            fd = serialControl.open_serial_port(1);
+            odom_fd = serialControl.open_serial_port(1);
             sleep(1);
         }
         serialControl.read_serial_task();
     }
+
 //    while (1);
     ros::Time current_time;
 
@@ -100,9 +108,8 @@ int main(int argc, char ** argv)
     ros::Rate r(50);
     while (ros::ok())
     {
-
-
-        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(theta);
+        DEBUG("imu_yaw is %f\n",imu_yaw);
+        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(-imu_yaw);
         current_time = ros::Time::now();
         calc_odom();
 //        DEBUG("hello debug %d %d\n",112, 111);
@@ -158,23 +165,32 @@ int main(int argc, char ** argv)
 
         if (WaterSeat.pub_flag)
         {
-            serila_controller::robot_fun_state waterSeat;
-            waterSeat.device_name = "waret_seat";
-            waterSeat.para = WaterSeat.info_byte[0];
-            robot_fun_state_pub.publish(waterSeat);
+            serila_controller::robot_fun_state gridState;
+            gridState.device_name = "grid_status";
+            gridState.para = WaterSeat.info_byte[0];
+            robot_fun_state_pub.publish(gridState);
+            WaterSeat.pub_flag = false;
+//            pub_status = false;
+            printf("WaterSeat.pub_flag %d\n",WaterSeat.pub_flag);
 
         }
 
         if (DoorState.pub_flag)
         {
             serila_controller::robot_fun_state doorState;
-            doorState.device_name = "doorstate";
+            doorState.device_name = "door_status";
             doorState.para = WaterSeat.info_byte[0];
             robot_fun_state_pub.publish(doorState);
+            DoorState.pub_flag = false;
+            printf("DoorState.pub_flag %d\n",WaterSeat.pub_flag);
+//            pub_status = false;
 
         }
         ros::spinOnce();
         r.sleep();
     }
+
+    wr_zero_speed =true;
+
     return 0;
 }
