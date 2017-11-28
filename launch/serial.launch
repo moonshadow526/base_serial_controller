@@ -1,0 +1,7 @@
+<launch>
+<node pkg="serila_controller" type="serila_controller" name="serila_controller" output="screen"/>
+
+<node pkg="serila_controller" type="test_record_vel" name="test_record_vel" output="screen"/>
+
+
+</launch>

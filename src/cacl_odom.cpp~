@@ -35,8 +35,8 @@ void calc_odom(void)
 {
     float  dt = 0.02;
 
-//    printf("left odom %d\n",robot_odom.odom->left_odom);
-//    printf("right odom %d\n",robot_odom.odom->right_odom);
+  //  printf("left odom %d\n",robot_odom.odom->left_odom);
+   // printf("right odom %d\n",robot_odom.odom->right_odom);
     DEBUG("right odom %d\n",robot_odom.odom->right_odom);
     DEBUG("left odom %d\n",robot_odom.odom->left_odom);
     float distance_left = (robot_odom.odom->left_odom - last_left_encoder_count)/TICKSPERMETER;
@@ -137,62 +137,9 @@ void cmd_vel_set(const geometry_msgs::Twist::ConstPtr& cmd_vel)
     }
 
 #endif
-    printf("----------------cmd_vel x=%f z=%f--------------\n",cmd_x,cmd_theta );
+    printf("----------------cmd_vel x=%f\tz=%f--------------\n",cmd_x,cmd_theta );
     printf("--------------------speed left is %f ------------------\n", left_speed_cmd);
     printf("--------------------speed right is %f ------------------\n", right_speed_cmd);
-    printf("----------------chazhi=%f--------------\n",std::fabs(left_speed_cmd) - std::fabs(right_speed_cmd) );
-
-    //&& chazhi > 0?((std::fabs(right_speed_cmd) -3.0 )<0): ((std::fabs(left_speed_cmd) -3.0 )<0)
-
-    //  diff great 6.0 and  anthoer speed less 3.0
-    float chazhi = std::fabs(left_speed_cmd) - std::fabs(right_speed_cmd);
-    if(((std::fabs(chazhi)-6.0) > 0) && (std::fabs(left_speed_cmd) - 0 >0.1) && (std::fabs(right_speed_cmd) - 0 >0.1) ){
-        if(chazhi > 0?((std::fabs(right_speed_cmd) -3.0 )<0): ((std::fabs(left_speed_cmd) -3.0 )<0)) {
-            printf("---------------- change vel----- ");
-            float tmp = 0;
-            if (chazhi > 0) {
-                tmp = 3.0 - std::fabs(right_speed_cmd);
-                if (right_speed_cmd > 0) {
-                    right_speed_cmd = 3.0;
-                    if (left_speed_cmd > 0) {
-                        left_speed_cmd -= 1.2 * tmp;
-                    } else {
-                        left_speed_cmd += 1.2 * tmp;
-                    }
-
-                } else {
-                    right_speed_cmd = -3.0;
-                    if (left_speed_cmd > 0) {
-                        left_speed_cmd -= 1.2 * tmp;
-                    } else {
-                        left_speed_cmd += 1.2 * tmp;
-                    }
-                }
-            } else {
-                tmp = 3.0 - std::fabs(left_speed_cmd);
-                if (left_speed_cmd > 0) {
-                    left_speed_cmd = 3.0;
-                    if (right_speed_cmd > 0) {
-                        right_speed_cmd -= 1.2 * tmp;
-                    } else {
-                        right_speed_cmd += 1.2 * tmp;
-                    }
-
-                } else {
-                    left_speed_cmd = -3.0;
-                    if (right_speed_cmd > 0) {
-                        right_speed_cmd -= 1.2 * tmp;
-                    } else {
-                        right_speed_cmd += 1.2 * tmp;
-                    }
-                }
-            }
-        }
-    }
-
-    printf("--------------------change speed left is %f ------------------\n", left_speed_cmd);
-    printf("-------------------- change speed right is %f ------------------\n", right_speed_cmd);
-
 
     if (left_speed_cmd >= STARTSPEED_P)
     {

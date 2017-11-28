@@ -7,7 +7,7 @@
 
 #include <geometry_msgs/Twist.h>
 
-//#define speedlimt
+#define speedlimt
 
 //两轮子的间距-米
 #define WHEEL_SEPARATION       0.296

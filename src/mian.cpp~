@@ -45,7 +45,7 @@ bool wr_zero_speed = false;
 extern bool pub_status;
 
 extern double imu_yaw;
-double  offset = 0;
+
 
 
 ros::Publisher cmd_vel_custom;
@@ -141,24 +141,12 @@ int main(int argc, char ** argv)
 
     ros::ServiceServer service = n.advertiseService("serial_data_server",serial_data_server);
     ROS_INFO("server ready");
-    offset = imu_yaw;
 
     ros::Rate r(50);
     while (ros::ok())
     {
-        imu_yaw = imu_yaw - offset;
-        if (imu_yaw < 0)
-        {
-            imu_yaw = -imu_yaw;
-        }
-        else
-        {
-            
-        }
         DEBUG("imu_yaw is %f\n",imu_yaw);
-        printf("imu_yaw is %f\n",imu_yaw);
-        printf("theta is %f\n", theta);
-        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(-imu_yaw);
+        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(theta);
         current_time = ros::Time::now();
         calc_odom();
 //        DEBUG("hello debug %d %d\n",112, 111);
@@ -365,7 +353,7 @@ void* ReadIMUData(void* arg){
 //                        printf("imu_serial_data %d is %x\n", i, imu_serial_data_r[0]);
                     }
                     imu_yaw = (double)(imu_serial_data[1]<<16|imu_serial_data[2]<<8|imu_serial_data[3])*2*3.14159/3600000;
-            //        printf("imu_yaw=%f\t%x,%x,%x\n",imu_yaw*(180/3.1415),imu_serial_data[1],imu_serial_data[2],imu_serial_data[3]);
+                    printf("imu_yaw=%f\t%x,%x,%x\n",imu_yaw*(180/3.1415),imu_serial_data[1],imu_serial_data[2],imu_serial_data[3]);
                 }
             }
         }
